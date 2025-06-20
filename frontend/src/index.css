@@ -1,0 +1,14 @@
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Font import for 'Inter' from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* Global body styles */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden; /* Prevent body scrolling, page content areas will scroll */
+}
