@@ -40,7 +40,7 @@ const GeneratePage = () => {
                     setConversionName("");
                     setDeliverableType("");
                     setDeliverableTypeOptions([]);
-                    setErOptions([]);
+                    //setErOptions([]);
                     setSelectedERs([]);
                 })
                 .catch(err => console.error('Error fetching conversions', err));
@@ -55,14 +55,14 @@ const GeneratePage = () => {
                     const mapped = res.data.map(d => ({ id: d.deliverableTypeID, name: d.deliverableTypeName }));
                     setDeliverableTypeOptions(mapped);
                     setDeliverableType("");
-                    setErOptions([]);
+                    //setErOptions([]);
                     setSelectedERs([]);
                 })
                 .catch(err => console.error('Error fetching deliverables', err));
         }
     }, [conversionName]);
 
-    // Fetch ERs when all 3 values are selected
+    // Fetch all Exception Masters and filter based on selected IDs
     useEffect(() => {
         if (accountName && conversionName && deliverableType) {
             axios.get('http://localhost:5004/api/lookup/exception-masters')
@@ -71,15 +71,17 @@ const GeneratePage = () => {
                         id: er.exceptionReportMasterID,
                         name: er.exceptionName
                     }));
-                    setErOptions(mapped);
-                    setSelectedERs([]);
+
+                    setErOptions(mapped);   
+                    //setSelectedERs([]);
                 })
                 .catch(err => {
-                    console.error('Error fetching ERs', err);
+                    console.error('Error fetching Exception Masters', err);
                     setErOptions([]);
                 });
         }
     }, [accountName, conversionName, deliverableType]);
+
 
     const handleERToggle = (optionId) => {
         setSelectedERs(prev =>

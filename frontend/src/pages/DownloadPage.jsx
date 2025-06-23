@@ -1,109 +1,147 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Button from '../components/ui/Button';
-import SingleSelectDropdown from '../components/ui/SingleSelectDropdown'; // Using the custom single select dropdown
+import SingleSelectDropdown from '../components/ui/SingleSelectDropdown';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 import Notification from '../components/Notification';
-import axios from 'axios'; 
-// Import data options for the dropdowns
-import { accountOptions, conversionOptions, deliverableTypeOptions, erOptions } from '../data/appOptions';
 
 const DownloadPage = () => {
-    // State variables to store the selected values for each form field
     const [accountName, setAccountName] = useState("");
     const [conversionName, setConversionName] = useState("");
     const [deliverableType, setDeliverableType] = useState("");
-    const [selectedERs, setSelectedERs] = useState([]); // Stores an array of selected ER IDs
+    const [selectedERs, setSelectedERs] = useState([]);
 
-    // State for loading indicator on the button
+    const [accountOptions, setAccountOptions] = useState([]);
+    const [conversionOptions, setConversionOptions] = useState([]);
+    const [deliverableTypeOptions, setDeliverableTypeOptions] = useState([]);
+    const [erOptions, setErOptions] = useState([]);
+
     const [isLoading, setIsLoading] = useState(false);
-    // State for showing dynamic notifications
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    // Handler function to toggle the selection of an ER option in the MultiSelectDropdown
+    // Fetch accounts
+    useEffect(() => {
+        axios.get('http://localhost:5004/api/lookup/accounts')
+            .then(res => {
+                const mapped = res.data.map(a => ({ id: a.accountID, name: a.accountName }));
+                setAccountOptions(mapped);
+            })
+            .catch(err => console.error('Error fetching accounts', err));
+    }, []);
+
+    // Fetch conversions
+    useEffect(() => {
+        if (accountName) {
+            axios.get(`http://localhost:5004/api/lookup/accounts/${accountName}/conversions`)
+                .then(res => {
+                    const mapped = res.data.map(c => ({ id: c.conversionID, name: c.conversionName }));
+                    setConversionOptions(mapped);
+                    setConversionName("");
+                    setDeliverableType("");
+                    setDeliverableTypeOptions([]);
+                    setErOptions([]);
+                })
+                .catch(err => console.error('Error fetching conversions', err));
+        }
+    }, [accountName]);
+
+    // Fetch deliverable types
+    useEffect(() => {
+        if (conversionName) {
+            axios.get(`http://localhost:5004/api/lookup/conversions/${conversionName}/deliverables`)
+                .then(res => {
+                    const mapped = res.data.map(d => ({ id: d.deliverableTypeID, name: d.deliverableTypeName }));
+                    setDeliverableTypeOptions(mapped);
+                    setDeliverableType("");
+                    setErOptions([]);
+                })
+                .catch(err => console.error('Error fetching deliverables', err));
+        }
+    }, [conversionName]);
+
+    // Fetch exception reports
+    useEffect(() => {
+        if (accountName && conversionName && deliverableType) {
+            axios.get('http://localhost:5004/api/lookup/exception-reports', {
+                params: {
+                    accountId: accountName,
+                    conversionId: conversionName,
+                    deliverableTypeId: deliverableType
+                }
+            })
+                .then(res => {
+                    const mapped = res.data.map(er => ({
+                        id: er.exceptionReportMasterID,
+                        name: er.exceptionName
+                    }));
+                    setErOptions(mapped);
+                    setSelectedERs([]);
+                })
+                .catch(err => {
+                    console.error('Error fetching exception reports', err);
+                    setErOptions([]);
+                });
+        }
+    }, [accountName, conversionName, deliverableType]);
+
     const handleERToggle = (optionId) => {
-        setSelectedERs(prev => {
-            // If the option is already selected, remove it
-            if (prev.includes(optionId)) {
-                return prev.filter(id => id !== optionId);
-            } else {
-                // Otherwise, add it to the selected options
-                return [...prev, optionId];
-            }
-        });
+        setSelectedERs(prev =>
+            prev.includes(optionId)
+                ? prev.filter(id => id !== optionId)
+                : [...prev, optionId]
+        );
     };
 
-    // Handler function for the "Download Selected" button click
     const handleDownload = () => {
-        setIsLoading(true); // Show loading indicator
-        setNotification({ message: '', type: '' }); // Clear any previous notifications
+        setIsLoading(true);
+        setNotification({ message: '', type: '' });
 
-        // Construct the JSON payload with only the IDs, as required by the backend
         const payload = {
-            accountID: accountName,         
-            conversionID: conversionName,   
-            deliverableTypeID: deliverableType, 
-            exceptionIDs: selectedERs       
+            accountID: accountName,
+            conversionID: conversionName,
+            deliverableTypeID: deliverableType,
+            exceptionIDs: selectedERs
         };
 
-        // Log the payload to the console to show what would be sent to the backend
-        console.log("JSON payload for Download Report:", JSON.stringify(payload, null, 2));
-
-        
         axios.post('http://localhost:5004/api/report/download', payload, {
-            responseType: 'blob' // Important: Tell Axios to expect a binary response (like a file)
+            responseType: 'blob'
         })
             .then(response => {
-                // Axios wraps the response, the actual blob is in response.data
-                console.log('Report download success response:', response);
-
-                // Logic to trigger file download from the browser
-                // Check if the content-type indicates a file (e.g., application/zip, application/pdf)
                 const contentType = response.headers['content-type'];
-                const filename = response.headers['content-disposition']
-                    ? response.headers['content-disposition'].split('filename=')[1]
-                    : 'selected_reports.zip'; // Fallback filename
+                const disposition = response.headers['content-disposition'];
+                const filename = disposition?.split('filename=')[1]?.replace(/["']/g, '') || 'selected_reports.zip';
 
-                // Create a temporary URL for the blob
                 const url = window.URL.createObjectURL(new Blob([response.data], { type: contentType }));
-                const a = document.createElement('a'); // Create a temporary anchor element
-                a.href = url; // Set its href to the blob URL
-                a.download = filename; // Suggest a filename for the download
-                document.body.appendChild(a); // Append to body (necessary for Firefox)
-                a.click(); // Programmatically click the anchor to trigger download
-                a.remove(); // Clean up the temporary anchor element
-                window.URL.revokeObjectURL(url); // Release the object URL
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
 
-                setNotification({ message: 'All selected reports downloaded successfully!', type: 'success' });
+                setNotification({ message: 'Reports downloaded successfully!', type: 'success' });
             })
             .catch(error => {
-                // Axios catches both network errors and non-2xx HTTP responses here
                 console.error('Error downloading reports:', error);
-                // If the error response has data (e.g., JSON error from backend), try to parse it
                 if (error.response && error.response.data instanceof Blob) {
-                    // If the error response is a blob (e.g., server sent an error message as text/plain)
                     const reader = new FileReader();
                     reader.onload = function () {
-                        const errorMessage = JSON.parse(reader.result).message || 'Failed to download reports due to server error.';
-                        setNotification({ message: errorMessage, type: 'error' });
+                        const errMsg = JSON.parse(reader.result).message || 'Failed to download reports.';
+                        setNotification({ message: errMsg, type: 'error' });
                     };
                     reader.readAsText(error.response.data);
                 } else {
-                    const errorMessage = error.response?.data?.message || error.message || 'Failed to download reports. Please try again.';
-                    setNotification({ message: errorMessage, type: 'error' });
+                    setNotification({ message: error.message || 'Download failed.', type: 'error' });
                 }
             })
             .finally(() => {
-                // This runs regardless of success or failure
-                setIsLoading(false); // Hide loading indicator
+                setIsLoading(false);
             });
-
-        // Removed the setTimeout simulation as we are now making a real API call
     };
 
     return (
         <main className="flex-1 p-6 md:p-12 lg:p-16 overflow-y-auto">
-            {/* Page Header */}
             <header className="mb-10 md:mb-12">
                 <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
                     <span className="text-primaryBlue">Download </span>
@@ -112,7 +150,6 @@ const DownloadPage = () => {
             </header>
 
             <div className="max-w-2xl mx-auto w-full mb-10">
-                
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="downloadAccountName" className="block text-lg md:text-xl font-medium text-black mb-2">
                         Account Name
@@ -126,7 +163,6 @@ const DownloadPage = () => {
                     />
                 </div>
 
-                {/* Conversion Name Dropdown */}
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="downloadConversionName" className="block text-lg md:text-xl font-medium text-black mb-2">
                         Conversion Name
@@ -140,7 +176,6 @@ const DownloadPage = () => {
                     />
                 </div>
 
-                {/* Deliverable Type Dropdown */}
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="downloadDeliverableType" className="block text-lg md:text-xl font-medium text-black mb-2">
                         Deliverable Type
@@ -154,20 +189,18 @@ const DownloadPage = () => {
                     />
                 </div>
 
-                {/* Select ERs Multi-select Dropdown */}
                 <div className="mb-6 md:mb-8">
                     <label className="block text-lg md:text-xl font-medium text-black mb-2">
                         Select ERs
                     </label>
                     <MultiSelectDropdown
-                        options={erOptions}
+                        options={erOptions || []}
                         selectedValues={selectedERs}
                         onToggle={handleERToggle}
                         placeholder="Select ERs for download"
                     />
                 </div>
 
-                {/* Download Button */}
                 <div className="flex justify-center mt-10 md:mt-12">
                     <Button
                         onClick={handleDownload}
@@ -177,8 +210,8 @@ const DownloadPage = () => {
                         {isLoading ? (
                             <span className="flex items-center gap-2">
                                 <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
                                 Downloading...
                             </span>
@@ -189,7 +222,6 @@ const DownloadPage = () => {
                 </div>
             </div>
 
-            {/* Notification component for feedback messages */}
             <Notification
                 message={notification.message}
                 type={notification.type}
@@ -200,5 +232,4 @@ const DownloadPage = () => {
 };
 
 DownloadPage.displayName = "DownloadPage";
-
 export default DownloadPage;
