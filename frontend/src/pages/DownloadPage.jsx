@@ -68,7 +68,8 @@ const DownloadPage = () => {
                 .then(res => {
                     const mapped = res.data.filter(er=>er.exceptionReportMasterID != null).map(er => ({
                         id: er.exceptionReportMasterID,
-                        name: er.exceptionName
+                        name: er.exceptionName,
+                        exceptionReportID: er.exceptionReportID
                     }));
                     setErOptions(mapped);
                     setSelectedERs([]);
@@ -92,11 +93,18 @@ const DownloadPage = () => {
         setIsLoading(true);
         setNotification({ message: '', type: '' });
 
+        
+        const selectedERObjects = erOptions.filter(er => selectedERs.includes(er.id));
+
+       
+        const exceptionReportIDs = selectedERObjects.map(er => er.exceptionReportID);
+
         const payload = {
             accountID: accountName,
             conversionID: conversionName,
             deliverableTypeID: deliverableType,
-            exceptionIDs: selectedERs
+            exceptionIDs: selectedERs,               // used for file names
+            exceptionReportIDs: exceptionReportIDs   // used for DB audit logging
         };
 
         axios.post('http://localhost:5004/api/report/download', payload, {
@@ -135,6 +143,7 @@ const DownloadPage = () => {
                 setIsLoading(false);
             });
     };
+
 
     return (
         <main className="flex-1 p-6 md:p-12 lg:p-16 overflow-y-auto">
