@@ -24,7 +24,7 @@ const GeneratePage = () => {
     useEffect(() => {
         axios.get('http://localhost:5004/api/lookup/accounts')
             .then(res => {
-                const mapped = res.data.map(a => ({ id: a.accountID, label: a.accountName }));
+                const mapped = res.data.map(a => ({ id: a.accountID, name: a.accountName }));
                 setAccountOptions(mapped);
             })
             .catch(err => console.error('Error fetching accounts', err));
@@ -35,7 +35,7 @@ const GeneratePage = () => {
         if (accountName) {
             axios.get(`http://localhost:5004/api/lookup/accounts/${accountName}/conversions`)
                 .then(res => {
-                    const mapped = res.data.map(c => ({ id: c.conversionID, label: c.conversionName }));
+                    const mapped = res.data.map(c => ({ id: c.conversionID, name: c.conversionName }));
                     setConversionOptions(mapped);
                     setConversionName("");
                     setDeliverableType("");
@@ -52,7 +52,7 @@ const GeneratePage = () => {
         if (conversionName) {
             axios.get(`http://localhost:5004/api/lookup/conversions/${conversionName}/deliverables`)
                 .then(res => {
-                    const mapped = res.data.map(d => ({ id: d.deliverableTypeID, label: d.deliverableTypeName }));
+                    const mapped = res.data.map(d => ({ id: d.deliverableTypeID, name: d.deliverableTypeName }));
                     setDeliverableTypeOptions(mapped);
                     setDeliverableType("");
                     setErOptions([]);
@@ -69,7 +69,7 @@ const GeneratePage = () => {
                 .then(res => {
                     const mapped = res.data.map(er => ({
                         id: er.exceptionReportMasterID,
-                        label: er.exceptionName
+                        name: er.exceptionName
                     }));
 
                     setErOptions(mapped);
