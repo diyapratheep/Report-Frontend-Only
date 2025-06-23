@@ -62,30 +62,26 @@ const GeneratePage = () => {
         }
     }, [conversionName]);
 
-    // Fetch ERs when all 3 values are selected
+    // Fetch all Exception Masters and filter based on selected IDs
     useEffect(() => {
         if (accountName && conversionName && deliverableType) {
-            axios.get('http://localhost:5004/api/lookup/exception-reports', {
-                params: {
-                    accountId: accountName,
-                    conversionId: conversionName,
-                    deliverableTypeId: deliverableType
-                }
-            })
+            axios.get('http://localhost:5004/api/lookup/exception-masters')
                 .then(res => {
                     const mapped = res.data.map(er => ({
-                        id: er.exceptionReportID,
+                        id: er.exceptionReportMasterID,
                         label: er.exceptionName
                     }));
+
                     setErOptions(mapped);
                     setSelectedERs([]);
                 })
                 .catch(err => {
-                    console.error('Error fetching ERs', err);
+                    console.error('Error fetching Exception Masters', err);
                     setErOptions([]);
                 });
         }
     }, [accountName, conversionName, deliverableType]);
+
 
     const handleERToggle = (optionId) => {
         setSelectedERs(prev =>
