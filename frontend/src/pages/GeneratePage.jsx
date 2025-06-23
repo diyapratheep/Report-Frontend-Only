@@ -24,7 +24,7 @@ const GeneratePage = () => {
     useEffect(() => {
         axios.get('http://localhost:5004/api/lookup/accounts')
             .then(res => {
-                const mapped = res.data.map(a => ({ id: a.accountID, label: a.accountName }));
+                const mapped = res.data.map(a => ({ id: a.accountID, name: a.accountName }));
                 setAccountOptions(mapped);
             })
             .catch(err => console.error('Error fetching accounts', err));
@@ -35,7 +35,7 @@ const GeneratePage = () => {
         if (accountName) {
             axios.get(`http://localhost:5004/api/lookup/accounts/${accountName}/conversions`)
                 .then(res => {
-                    const mapped = res.data.map(c => ({ id: c.conversionID, label: c.conversionName }));
+                    const mapped = res.data.map(c => ({ id: c.conversionID, name: c.conversionName }));
                     setConversionOptions(mapped);
                     setConversionName("");
                     setDeliverableType("");
@@ -52,7 +52,7 @@ const GeneratePage = () => {
         if (conversionName) {
             axios.get(`http://localhost:5004/api/lookup/conversions/${conversionName}/deliverables`)
                 .then(res => {
-                    const mapped = res.data.map(d => ({ id: d.deliverableTypeID, label: d.deliverableTypeName }));
+                    const mapped = res.data.map(d => ({ id: d.deliverableTypeID, name: d.deliverableTypeName }));
                     setDeliverableTypeOptions(mapped);
                     setDeliverableType("");
                     setErOptions([]);
@@ -65,17 +65,11 @@ const GeneratePage = () => {
     // Fetch ERs when all 3 values are selected
     useEffect(() => {
         if (accountName && conversionName && deliverableType) {
-            axios.get('http://localhost:5004/api/lookup/exception-reports', {
-                params: {
-                    accountId: accountName,
-                    conversionId: conversionName,
-                    deliverableTypeId: deliverableType
-                }
-            })
+            axios.get('http://localhost:5004/api/lookup/exception-masters')
                 .then(res => {
                     const mapped = res.data.map(er => ({
-                        id: er.exceptionReportID,
-                        label: er.exceptionName
+                        id: er.exceptionReportMasterID,
+                        name: er.exceptionName
                     }));
                     setErOptions(mapped);
                     setSelectedERs([]);
