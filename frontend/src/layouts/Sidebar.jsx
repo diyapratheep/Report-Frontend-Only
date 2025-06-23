@@ -1,12 +1,10 @@
 import React from 'react';
 import { cn } from '../utils/cn';
-import {ReactComponent as ReportIcon} from '../assets/icons/report.svg'; // Importing the report icon as a React component }
-// Import icons as React components from their new dedicated files
+import {ReactComponent as ReportIcon} from '../assets/icons/report.svg'; 
 
 import { ReactComponent as UserIcon } from '../assets/icons/user.svg';
 import { ReactComponent as SettingsIcon } from '../assets/icons/settings.svg';
-import { ReactComponent as DownloadIcon } from '../assets/icons/download.svg'; // Example icon, adjust path as necessary
-
+import { ReactComponent as DownloadIcon } from '../assets/icons/download.svg'; 
 const Sidebar = ({ activeTab, onTabChange, onSignOut }) => {
     return (
         <aside className="fixed left-0 top-0 h-full w-[72px] bg-sidebarBg border-r border-gray-100 flex flex-col justify-between py-6 z-20">

@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-
-// Import utility functions
 import { cn } from './utils/cn';
-
-// Import layout components
 import Sidebar from './layouts/Sidebar';
-
-// Import page components
 import LoginPage from './pages/LoginPage';
 import GeneratePage from './pages/GeneratePage';
 import DownloadPage from './pages/DownloadPage';
@@ -41,7 +35,7 @@ const App = () => {
 
     return (
         <div className="flex h-screen w-screen bg-white font-inter">
-            {/* Styles are applied via index.css and tailwind.config.js */}
+        
             {currentView !== 'login' && (
                 <Sidebar
                     activeTab={currentView}

@@ -20,7 +20,6 @@ const GeneratePage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    // Fetch Accounts on load
     useEffect(() => {
         axios.get('http://localhost:5004/api/lookup/accounts')
             .then(res => {
@@ -30,7 +29,7 @@ const GeneratePage = () => {
             .catch(err => console.error('Error fetching accounts', err));
     }, []);
 
-    // Fetch Conversions when account changes
+ 
     useEffect(() => {
         if (accountName) {
             axios.get(`http://localhost:5004/api/lookup/accounts/${accountName}/conversions`)
@@ -40,29 +39,27 @@ const GeneratePage = () => {
                     setConversionName("");
                     setDeliverableType("");
                     setDeliverableTypeOptions([]);
-                    //setErOptions([]);
                     setSelectedERs([]);
                 })
                 .catch(err => console.error('Error fetching conversions', err));
         }
     }, [accountName]);
 
-    // Fetch Deliverables when conversion changes
+    
     useEffect(() => {
         if (conversionName) {
             axios.get(`http://localhost:5004/api/lookup/conversions/${conversionName}/deliverables`)
                 .then(res => {
                     const mapped = res.data.map(d => ({ id: d.deliverableTypeID, name: d.deliverableTypeName }));
                     setDeliverableTypeOptions(mapped);
-                    setDeliverableType("");
-                    //setErOptions([]);
+                    setDeliverableType("");  
                     setSelectedERs([]);
                 })
                 .catch(err => console.error('Error fetching deliverables', err));
         }
     }, [conversionName]);
 
-    // Fetch all Exception Masters and filter based on selected IDs
+  
     useEffect(() => {
         if (accountName && conversionName && deliverableType) {
             axios.get('http://localhost:5004/api/lookup/exception-masters')
@@ -73,7 +70,7 @@ const GeneratePage = () => {
                     }));
 
                     setErOptions(mapped);   
-                    //setSelectedERs([]);
+                 
                 })
                 .catch(err => {
                     console.error('Error fetching Exception Masters', err);
@@ -127,7 +124,7 @@ const GeneratePage = () => {
             </header>
 
             <div className="max-w-2xl mx-auto w-full">
-                {/* Account Dropdown */}
+         
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="accountName" className="block text-lg font-medium text-black mb-2">
                         Account Name
@@ -141,7 +138,7 @@ const GeneratePage = () => {
                     />
                 </div>
 
-                {/* Conversion Dropdown */}
+         
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="conversionName" className="block text-lg font-medium text-black mb-2">
                         Conversion Name
@@ -155,7 +152,6 @@ const GeneratePage = () => {
                     />
                 </div>
 
-                {/* Deliverable Type Dropdown */}
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="deliverableType" className="block text-lg font-medium text-black mb-2">
                         Deliverable Type
@@ -169,7 +165,7 @@ const GeneratePage = () => {
                     />
                 </div>
 
-                {/* ERs Multi-select */}
+              
                 <div className="mb-6 md:mb-8">
                     <label className="block text-lg font-medium text-black mb-2">
                         Select ERs
@@ -182,7 +178,7 @@ const GeneratePage = () => {
                     />
                 </div>
 
-                {/* Generate Button */}
+             
                 <div className="flex justify-center mt-10 md:mt-12">
                     <Button
                         onClick={handleGenerate}

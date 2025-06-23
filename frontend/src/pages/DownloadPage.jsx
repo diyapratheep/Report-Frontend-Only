@@ -19,7 +19,6 @@ const DownloadPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    // Fetch accounts
     useEffect(() => {
         axios.get('http://localhost:5004/api/lookup/accounts')
             .then(res => {
@@ -29,7 +28,6 @@ const DownloadPage = () => {
             .catch(err => console.error('Error fetching accounts', err));
     }, []);
 
-    // Fetch conversions
     useEffect(() => {
         if (accountName) {
             axios.get(`http://localhost:5004/api/lookup/accounts/${accountName}/conversions`)
@@ -45,7 +43,6 @@ const DownloadPage = () => {
         }
     }, [accountName]);
 
-    // Fetch deliverable types
     useEffect(() => {
         if (conversionName) {
             axios.get(`http://localhost:5004/api/lookup/conversions/${conversionName}/deliverables`)
@@ -59,7 +56,6 @@ const DownloadPage = () => {
         }
     }, [conversionName]);
 
-    // Fetch exception reports
     useEffect(() => {
         if (accountName && conversionName && deliverableType) {
             axios.get('http://localhost:5004/api/lookup/exception-reports', {
