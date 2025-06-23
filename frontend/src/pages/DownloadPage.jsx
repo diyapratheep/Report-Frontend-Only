@@ -70,7 +70,7 @@ const DownloadPage = () => {
                 }
             })
                 .then(res => {
-                    const mapped = res.data.map(er => ({
+                    const mapped = res.data.filter(er=>er.exceptionReportMasterID != null).map(er => ({
                         id: er.exceptionReportMasterID,
                         name: er.exceptionName
                     }));

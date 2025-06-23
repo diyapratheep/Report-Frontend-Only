@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { cn } from '../utils/cn';
-import { ReactComponent as CheckIcon } from '../assets/icons/check.svg'; // Importing the check icon as a React component }
+import { ReactComponent as CheckIcon } from '../assets/icons/check.svg'; 
 
 
 
