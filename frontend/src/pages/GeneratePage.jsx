@@ -40,7 +40,7 @@ const GeneratePage = () => {
                     setConversionName("");
                     setDeliverableType("");
                     setDeliverableTypeOptions([]);
-                    setErOptions([]);
+                    //setErOptions([]);
                     setSelectedERs([]);
                 })
                 .catch(err => console.error('Error fetching conversions', err));
@@ -55,7 +55,7 @@ const GeneratePage = () => {
                     const mapped = res.data.map(d => ({ id: d.deliverableTypeID, name: d.deliverableTypeName }));
                     setDeliverableTypeOptions(mapped);
                     setDeliverableType("");
-                    setErOptions([]);
+                    //setErOptions([]);
                     setSelectedERs([]);
                 })
                 .catch(err => console.error('Error fetching deliverables', err));
@@ -72,8 +72,8 @@ const GeneratePage = () => {
                         name: er.exceptionName
                     }));
 
-                    setErOptions(mapped);
-                    setSelectedERs([]);
+                    setErOptions(mapped);   
+                    //setSelectedERs([]);
                 })
                 .catch(err => {
                     console.error('Error fetching Exception Masters', err);
