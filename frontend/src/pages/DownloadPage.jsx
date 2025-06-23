@@ -111,10 +111,8 @@ const DownloadPage = () => {
                 </h1>
             </header>
 
-            {/* Form Content - Same structure and styling as the Generate page */}
-            {/* max-w-2xl allows it to be wider than default Tailwind 'md' */}
             <div className="max-w-2xl mx-auto w-full mb-10">
-                {/* Account Name Dropdown */}
+                
                 <div className="mb-6 md:mb-8">
                     <label htmlFor="downloadAccountName" className="block text-lg md:text-xl font-medium text-black mb-2">
                         Account Name
